@@ -3,6 +3,7 @@
 MeowHttpd是基于JQHttpServer开发的轻量级HTTP/HTTPS服务器，目前支持GET和POST两个协议。
 为其添加了一个Post解析和来源IP解析而已：》
 另外有一个把SSL部分代码去除的文件
+还有一个把Qlocalsocket也去掉的最精简版本
 
 下面的是原来文件的说明：
 
