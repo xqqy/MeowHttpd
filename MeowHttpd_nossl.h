@@ -50,7 +50,7 @@ class Session: public QObject
     Q_DISABLE_COPY( Session )
 
 public:
-    Session( const QPointer< QIODevice > &tcpSocket );
+    Session(const QPointer< QIODevice > &tcpSocket , QHostAddress ip_);
 
     ~Session();
 
@@ -73,6 +73,8 @@ public:
     QMap< QString, QString > requestGet() const;
 
     QMap< QString , QString > requestPost() const;
+
+    QHostAddress ip;
 
 public slots:
 

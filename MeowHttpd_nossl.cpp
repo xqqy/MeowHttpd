@@ -78,11 +78,12 @@ static QString replyOptionsFormat(
     );
 
 // Session
-Session::Session(const QPointer<QIODevice> &tcpSocket):
+Session::Session(const QPointer<QIODevice> &tcpSocket,QHostAddress ip_=QHostAddress()):
     ioDevice_( tcpSocket ),
     timerForClose_( new QTimer )
 {
     timerForClose_->setInterval( 30 * 1000 );
+    this->ip=ip_;
 
     connect( ioDevice_.data(), &QIODevice::readyRead, [ this ]()
     {
@@ -833,7 +834,7 @@ bool TcpServerManage::onStart()
     {
         auto socket = this->tcpServer_->nextPendingConnection();
 
-        this->newSession( new Session( socket ) );
+        this->newSession( new Session( socket,socket->peerAddress()) );
     } );
 
     if ( !tcpServer_->listen( listenAddress_, listenPort_ ) )
