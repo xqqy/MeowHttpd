@@ -1,6 +1,11 @@
-/*
+﻿/*
     This file was a part of JQLibrary
-License under LGPLv3
+
+    Add a easy analysis for post require
+    
+    It should compatible to JQHttpServer
+    
+    license under LGPLV3
 */
 
 #include "MeowHttpd_nossl.h"
