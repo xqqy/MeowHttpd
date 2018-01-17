@@ -8,7 +8,7 @@
     license under LGPLV3
 */
 
-#include "JQHttpServer.h"
+#include "MeowHttpd_nossl.h"
 
 // Qt lib import
 #include <QEventLoop>
