@@ -2,12 +2,10 @@
 
 MeowHttpd是基于JQHttpServer开发的轻量级HTTP/HTTPS服务器，目前支持GET和POST两个协议。
 为其添加了一个Post解析和来源IP解析而已：》
-另外有一个把SSL部分代码去除的文件
-还有一个把Qlocalsocket也去掉的最精简版本
+为简便代码，只维护没有SSL没有LocalSocket的版本
+适用于局域网小服务器
 
-下面的是原来文件的说明：
-
-底层有QTcpSocket、QSslSocket和QLocalSocket三个版本，方便使用。
+Ver1.2.1.0
 
 #### 用到的Qt库有：
 
@@ -25,17 +23,14 @@ MeowHttpd是基于JQHttpServer开发的轻量级HTTP/HTTPS服务器，目前支�
 
 本库源码均已开源在了GitHub上。
 
-GitHub地址：https://github.com/188080501/JQHttpServer
+### 使用方法：
 
-方便的话，帮我点个星星，或者反馈一下使用意见，这是对我莫大的帮助。
+通过 MeowHttpd::TcpServerManage a( 2 ); 来创建一个服务器变量（a为变量名称）
 
-若你已经有了更好的建议，或者想要一些新功能，可以直接邮件我，我的邮箱是：Jason@JasonServer.com
+通过该变量的setHttpAcceptedCallback方法设置接收到包后如何处理
 
-或者直接在GitHub上提交问题：
-https://github.com/188080501/JQHttpServer/issues
+调用listen方法来启动服务器
 
-## 性能介绍
+### JQHTTPServer
 
-本库性能只能说一般般，底层是poll，而且又有一些跨线程操作。
-
-在我的电脑（ iMac + 127.0.0.1 ）上，HTTP的QPS为1670。
+JQHTTPServer:https://github.com/188080501/JQHttpServer

@@ -1,15 +1,5 @@
-﻿/*
-    This file was a part of JQLibrary
-
-    Add a easy analysis for post require
-    
-    It should compatible to JQHttpServer
-    
-    license under LGPLV3
-*/
-
-#ifndef JQHTTPSERVER_H_
-#define JQHTTPSERVER_H_
+﻿#ifndef MEOWHTTPD_H_
+#define MEOWHTTPD_H_
 
 #ifndef QT_NETWORK_LIB
 #   error("Please add network in pro file")
@@ -18,6 +8,13 @@
 #ifndef QT_CONCURRENT_LIB
 #   error("Please add concurrent in pro file")
 #endif
+
+#if _MSC_VER >= 1600
+
+#pragma execution_character_set("utf-8")
+
+#endif
+
 
 // C++ lib import
 #include <functional>
@@ -41,7 +38,7 @@ class QTimer;
 class QImage;
 class QTcpServer;
 
-namespace JQHttpServer
+namespace MeowHttpd
 {
 
 class Session: public QObject
@@ -72,7 +69,7 @@ public:
 
     QMap< QString, QString > requestGet() const;
 
-    QMap< QString , QString > requestPost() const;
+    QMap< QString , QByteArray > requestPost() const;
 
     QPointer<QTcpSocket> socket() const{return ioDevice_;}
 
@@ -201,4 +198,4 @@ private:
 
 }
 
-#endif//JQHTTPSERVER_H_
+#endif

@@ -6,9 +6,9 @@ TEMPLATE = app
 
 SOURCES += \
     $$PWD/demo.cpp \
-    MeowHttpd_nossl.cpp
+    MeowHttpd_nossl_nolocal.cpp
 
 DISTFILES +=
 
 HEADERS += \
-    MeowHttpd_nossl.h
+    MeowHttpd_nossl_nolocal.h

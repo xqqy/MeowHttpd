@@ -2,13 +2,13 @@
 #include <QtCore>
 #include <QImage>
 
-// JQLibrary import
-#include "MeowHttpd_nossl.h"
+// MeowHttpd import
+#include "MeowHttpd_nossl_nolocal.h"
 int main(int argc, char *argv[])
 {
     QCoreApplication a(argc, argv);
 
-    JQHttpServer::TcpServerManage tcpServerManage( 2 ); // 设置最大处理线程数，默认2个
+    MeowHttpd::TcpServerManage tcpServerManage( 2 ); // 设置最大处理线程数，默认2个
 
     tcpServerManage.setHttpAcceptedCallback( []( const QPointer< JQHttpServer::Session > &session )
     {

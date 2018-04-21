@@ -1,14 +1,11 @@
-﻿/*
-    This file was a part of JQLibrary
+﻿#if _MSC_VER >= 1600
 
-    Add a easy analysis for post require
-    
-    It should compatible to JQHttpServer
-    
-    license under LGPLV3
-*/
+#pragma execution_character_set("utf-8")
 
-#include "MeowHttpd_nossl.h"
+#endif
+
+
+#include "MeowHttpd_nossl_nolocal.h"
 
 // Qt lib import
 #include <QEventLoop>
@@ -30,7 +27,7 @@
 #include <QTcpSocket>
 
 
-using namespace JQHttpServer;
+using namespace MeowHttpd;
 
 static QString replyTextFormat(
         "HTTP/1.1 %1 OK\r\n"
@@ -141,25 +138,59 @@ Session::~Session()
     }
 }
 
-QMap< QString, QString > Session::requestPost() const
+QMap< QString, QByteArray > Session::requestPost() const
 {
-if(requestBody_.isEmpty() or requestBody_.isNull()){return { };}
-    QMap< QString, QString > result;
-    int all=0;
-    QString body=requestBody_;
+if(requestBody_.isEmpty() || requestBody_.isNull()){return { };}
+    QMap< QString, QByteArray > result;
+	qDebug() << requestBody_;
+	if (requestHeader_["Content-Type"] == QString("application/x-www-form-urlencoded")) {
+		int all = 0;
+		QString body;
+		body = requestBody_;
 
-    for (int i = 0; i < body.length(); i++)
-    {
-        if (body.toStdString()[i] == '=')
-        {
-            all++;
-        }
-    }
-    for(int now=0;now<all;now++){
-        result[body.section('&',now,now).section('=',0,0)]=body.section('&',now,now).section('=',1,1);
-    }
+		for (int i = 0; i < body.length(); i++)
+		{
+			if (body.toStdString()[i] == '=')
+			{
+				all++;
+			}
+		}
+		for (int now = 0; now<all; now++) {
+			result[body.section('&', now, now).section('=', 0, 0)] = body.section('&', now, now).section('=', 1, 1).toUtf8();
+		}
 
-    return result;
+		return result;
+	}
+	else {
+		QString broder = requestHeader_["Content-Type"].section(";", 1, 1);
+		broder = broder.section("=", 1, 1);
+		broder = "--" + broder;
+		QByteArray body = requestBody_;
+		QByteArray border(broder.toLocal8Bit());
+		QList<QByteArray> lista;
+		int idx = 0, from = border.length();
+		while ((idx = body.indexOf(border, from)) != -1)
+		{
+			lista.append(body.mid(from, idx-from));
+			from = idx + border.length();
+		}//分割字符串
+
+		int all = 0;
+		while (lista.count()>all) {
+			QByteArray kg("\r\n");
+			QString postn;
+			QByteArray post;
+
+			postn = lista[all].mid(kg.length(),lista[all].indexOf(kg,2) - kg.length());//表单名
+			post = lista[all].mid(postn.length()+kg.length()*2+2);
+
+			result[postn.section(":", 1, 1).section(";", 1, 1).section("=",1,1).replace("'","")] = post;
+			qDebug() << "正在处理post-" << postn.section(":", 1, 1).section(";", 1, 1).section("=", 1, 1).replace("'", "") <<"-"<< post;
+			all++;
+		}
+		return result;
+	}
+
 }
 
 QString Session::requestUrlPath() const
@@ -245,7 +276,7 @@ void Session::replyText(const QString &replyData, const int &httpStatusCode)
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyText: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyText: current session this is null";
         return;
     }
 
@@ -257,14 +288,14 @@ void Session::replyText(const QString &replyData, const int &httpStatusCode)
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyText: already reply";
+        qDebug() << "MeowHttpd::Session::replyText: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyText: error1";
+        qDebug() << "MeowHttpd::Session::replyText: error1";
         this->deleteLater();
         return;
     }
@@ -285,7 +316,7 @@ void Session::replyRedirects(const QUrl &targetUrl, const int &httpStatusCode)
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyRedirects: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyRedirects: current session this is null";
         return;
     }
 
@@ -297,14 +328,14 @@ void Session::replyRedirects(const QUrl &targetUrl, const int &httpStatusCode)
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyRedirects: already reply";
+        qDebug() << "MeowHttpd::Session::replyRedirects: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyRedirects: error1";
+        qDebug() << "MeowHttpd::Session::replyRedirects: error1";
         this->deleteLater();
         return;
     }
@@ -327,7 +358,7 @@ void Session::replyJsonObject(const QJsonObject &jsonObject, const int &httpStat
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonObject: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyJsonObject: current session this is null";
         return;
     }
 
@@ -339,14 +370,14 @@ void Session::replyJsonObject(const QJsonObject &jsonObject, const int &httpStat
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonObject: already reply";
+        qDebug() << "MeowHttpd::Session::replyJsonObject: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonObject: error1";
+        qDebug() << "MeowHttpd::Session::replyJsonObject: error1";
         this->deleteLater();
         return;
     }
@@ -368,7 +399,7 @@ void Session::replyJsonArray(const QJsonArray &jsonArray, const int &httpStatusC
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonArray: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyJsonArray: current session this is null";
         return;
     }
 
@@ -380,14 +411,14 @@ void Session::replyJsonArray(const QJsonArray &jsonArray, const int &httpStatusC
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonArray: already reply";
+        qDebug() << "MeowHttpd::Session::replyJsonArray: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyJsonArray: error1";
+        qDebug() << "MeowHttpd::Session::replyJsonArray: error1";
         this->deleteLater();
         return;
     }
@@ -409,7 +440,7 @@ void Session::replyFile(const QString &filePath, const int &httpStatusCode)
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyFile: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyFile: current session this is null";
         return;
     }
 
@@ -421,14 +452,14 @@ void Session::replyFile(const QString &filePath, const int &httpStatusCode)
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyFile: already reply";
+        qDebug() << "MeowHttpd::Session::replyFile: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyFile: error1";
+        qDebug() << "MeowHttpd::Session::replyFile: error1";
         this->deleteLater();
         return;
     }
@@ -438,7 +469,7 @@ void Session::replyFile(const QString &filePath, const int &httpStatusCode)
 
     if ( !file->open( QIODevice::ReadOnly ) )
     {
-        qDebug() << "JQHttpServer::Session::replyFile: open file error:" << filePath;
+        qDebug() << "MeowHttpd::Session::replyFile: open file error:" << filePath;
         ioDeviceForReply_.clear();
         this->deleteLater();
         return;
@@ -459,7 +490,7 @@ void Session::replyImage(const QImage &image, const int &httpStatusCode)
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyImage: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyImage: current session this is null";
         return;
     }
 
@@ -471,14 +502,14 @@ void Session::replyImage(const QImage &image, const int &httpStatusCode)
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyImage: already reply";
+        qDebug() << "MeowHttpd::Session::replyImage: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyImage: error1";
+        qDebug() << "MeowHttpd::Session::replyImage: error1";
         this->deleteLater();
         return;
     }
@@ -487,7 +518,7 @@ void Session::replyImage(const QImage &image, const int &httpStatusCode)
 
     if ( !buffer->open( QIODevice::ReadWrite ) )
     {
-        qDebug() << "JQHttpServer::Session::replyImage: open buffer error";
+        qDebug() << "MeowHttpd::Session::replyImage: open buffer error";
         delete buffer;
         this->deleteLater();
         return;
@@ -495,7 +526,7 @@ void Session::replyImage(const QImage &image, const int &httpStatusCode)
 
     if ( !image.save( buffer, "PNG" ) )
     {
-        qDebug() << "JQHttpServer::Session::replyImage: save image to buffer error";
+        qDebug() << "MeowHttpd::Session::replyImage: save image to buffer error";
         delete buffer;
         this->deleteLater();
         return;
@@ -518,7 +549,7 @@ void Session::replyOptions()
     auto this_ = this;
     if ( !this_ )
     {
-        qDebug() << "JQHttpServer::Session::replyOptions: current session this is null";
+        qDebug() << "MeowHttpd::Session::replyOptions: current session this is null";
         return;
     }
 
@@ -530,14 +561,14 @@ void Session::replyOptions()
 
     if ( alreadyReply_ )
     {
-        qDebug() << "JQHttpServer::Session::replyOptions: already reply";
+        qDebug() << "MeowHttpd::Session::replyOptions: already reply";
         return;
     }
     alreadyReply_ = true;
 
     if ( ioDevice_.isNull() )
     {
-        qDebug() << "JQHttpServer::Session::replyOptions: error1";
+        qDebug() << "MeowHttpd::Session::replyOptions: error1";
         this->deleteLater();
         return;
     }
@@ -564,7 +595,7 @@ void Session::inspectionBufferSetup1()
                 // 没有获取到 method 但是缓冲区内已经有了数据，这可能是一个无效的连接
                 if ( requestMethod_.isEmpty() && ( buffer_.size() > 4 ) )
                 {
-                    qDebug() << "JQHttpServer::Session::inspectionBuffer: error0";
+                    qDebug() << "MeowHttpd::Session::inspectionBuffer: error0";
                     this->deleteLater();
                     return;
                 }
@@ -575,7 +606,7 @@ void Session::inspectionBufferSetup1()
             // 如果未获取到 method 并且已经定位到了分割标记符，那么直接放弃这个连接
             if ( requestMethod_.isEmpty() && ( splitFlagIndex == 0 ) )
             {
-                qDebug() << "JQHttpServer::Session::inspectionBuffer: error1";
+                qDebug() << "MeowHttpd::Session::inspectionBuffer: error1";
                 this->deleteLater();
                 return;
             }
@@ -588,7 +619,7 @@ void Session::inspectionBufferSetup1()
 
                 if ( requestLineDatas.size() != 3 )
                 {
-                    qDebug() << "JQHttpServer::Session::inspectionBuffer: error2";
+                    qDebug() << "MeowHttpd::Session::inspectionBuffer: error2";
                     this->deleteLater();
                     return;
                 }
@@ -602,7 +633,7 @@ void Session::inspectionBufferSetup1()
                      ( requestMethod_ != "POST" ) &&
                      ( requestMethod_ != "PUT" ) )
                 {
-                    qDebug() << "JQHttpServer::Session::inspectionBuffer: error3:" << requestMethod_;
+                    qDebug() << "MeowHttpd::Session::inspectionBuffer: error3:" << requestMethod_;
                     this->deleteLater();
                     return;
                 }
@@ -628,7 +659,7 @@ void Session::inspectionBufferSetup1()
 
                 if ( index <= 0 )
                 {
-                    qDebug() << "JQHttpServer::Session::inspectionBuffer: error4";
+                    qDebug() << "MeowHttpd::Session::inspectionBuffer: error4";
                     this->deleteLater();
                     return;
                 }
@@ -668,7 +699,7 @@ void Session::inspectionBufferSetup2()
 
     if ( !handleAcceptedCallback_ )
     {
-        qDebug() << "JQHttpServer::Session::inspectionBuffer: error4";
+        qDebug() << "MeowHttpd::Session::inspectionBuffer: error4";
         this->deleteLater();
         return;
     }
@@ -700,13 +731,13 @@ bool AbstractManage::begin()
 {
     if ( QThread::currentThread() != this->thread() )
     {
-        qDebug() << "JQHttpServer::Manage::listen: error: listen from other thread";
+        qDebug() << "MeowHttpd::Manage::listen: error: listen from other thread";
         return false;
     }
 
     if ( this->isRunning() )
     {
-        qDebug() << "JQHttpServer::Manage::close: error: already running";
+        qDebug() << "MeowHttpd::Manage::close: error: already running";
         return false;
     }
 
@@ -717,7 +748,7 @@ void AbstractManage::close()
 {
     if ( !this->isRunning() )
     {
-        qDebug() << "JQHttpServer::Manage::close: error: not running";
+        qDebug() << "MeowHttpd::Manage::close: error: not running";
         return;
     }
 
@@ -767,7 +798,7 @@ void AbstractManage::stopServerThread()
 
 void AbstractManage::newSession(const QPointer< Session > &session)
 {
-    session->setHandleAcceptedCallback( [ this ](const QPointer< JQHttpServer::Session > &session){ this->handleAccepted( session ); } );
+    session->setHandleAcceptedCallback( [ this ](const QPointer< MeowHttpd::Session > &session){ this->handleAccepted( session ); } );
 
     auto session_ = session.data();
     connect( session.data(), &QObject::destroyed, [ this, session_ ]()
@@ -785,7 +816,7 @@ void AbstractManage::handleAccepted(const QPointer<Session> &session)
     {
         if ( !this->httpAcceptedCallback_ )
         {
-            qDebug() << "JQHttpServer::Manage::handleAccepted: error, httpAcceptedCallback_ is nullptr";
+            qDebug() << "MeowHttpd::Manage::handleAccepted: error, httpAcceptedCallback_ is nullptr";
             return;
         }
 
